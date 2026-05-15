@@ -1,31 +1,36 @@
-name: AI Fashion Generator
+name: generate
 
 on:
   schedule:
-    - cron: "0 * * * *"
+    - cron: "0 * * * *"   # her 60 dakika
   workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   generate:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Run Fashion Engine
-        run: python scripts/generator.py
+      - name: Install deps
+        run: pip install -r requirements.txt
 
-      - name: Commit
+      - name: Run generator
+        run: python generate.py
+
+      - name: Commit images
         run: |
-          git config user.name "AI Bot"
-          git config user.email "bot@github.com"
+          git config user.name "auto-bot"
+          git config user.email "bot@example.com"
           git add .
-          git commit -m "New AI Fashion Editorial" || echo "No changes"
+          git commit -m "auto generated image" || echo "no changes"
           git push
