@@ -3,12 +3,20 @@ import json
 import requests
 import base64
 import time
+import random
 
 # =========================
 # CLOUDFARE CONFIG
 # =========================
 CF_API_TOKEN = os.environ["CF_API_TOKEN"]
 CF_ACCOUNT_ID = os.environ["CF_ACCOUNT_ID"]
+
+url = f"https://api.cloudflare.com/client/v4/accounts/{CF_ACCOUNT_ID}/ai/run/@cf/black-forest-labs/flux-1-schnell"
+
+headers = {
+    "Authorization": f"Bearer {CF_API_TOKEN}",
+    "Content-Type": "application/json"
+}
 
 # =========================
 # LOAD DATA
@@ -24,78 +32,82 @@ clothing = data.get("clothing", "")
 scene = data.get("scene", "")
 environment = data.get("environment", "")
 technical = data.get("technical", "")
-negative = data.get("negative", "")
+
+# =========================
+# STYLE VARIANTS
+# =========================
+styles = [
+    "editorial runway fashion photography",
+    "luxury high-end studio shoot",
+    "cinematic fashion portrait lighting",
+    "avant-garde fashion magazine cover"
+]
+
+style = random.choice(styles)
 
 # =========================
 # PROMPT
 # =========================
-prompt = f"""
+base_prompt = f"""
 {model},
 {clothing},
 {scene},
 {environment},
 {technical},
-ultra realistic fashion photography, cinematic lighting, editorial style
+{style},
+ultra realistic fashion photography, cinematic lighting, high detail
 """
 
 print("Prompt created:")
-print(prompt)
+print(base_prompt)
 
 # =========================
-# IMAGE GENERATION
+# GENERATE MULTIPLE IMAGES
 # =========================
-def generate_image(prompt):
-    url = f"https://api.cloudflare.com/client/v4/accounts/{CF_ACCOUNT_ID}/ai/run/@cf/black-forest-labs/flux-1-schnell"
-
-    headers = {
-        "Authorization": f"Bearer {CF_API_TOKEN}",
-        "Content-Type": "application/json"
-    }
-
-    payload = {
-        "prompt": prompt
-    }
+def generate_image(prompt, index):
+    payload = {"prompt": prompt}
 
     response = requests.post(url, headers=headers, json=payload)
 
+    print(f"\n--- IMAGE {index} ---")
     print("STATUS:", response.status_code)
-    print("RAW RESPONSE:", response.text[:500])
+    print("RAW:", response.text[:200])
 
     if response.status_code != 200:
-        raise Exception(f"HTTP ERROR: {response.text}")
+        raise Exception(response.text)
 
-    try:
-        result = response.json()
-    except Exception:
-        raise Exception(f"Invalid JSON response: {response.text}")
+    result = response.json()
 
     if not result.get("success"):
-        raise Exception(f"Cloudflare error: {result}")
+        raise Exception(result)
 
     image_base64 = result["result"]["image"]
-
     image_bytes = base64.b64decode(image_base64)
 
     if len(image_bytes) < 1000:
-        raise Exception("Empty or invalid image received")
+        raise Exception("Empty image")
 
-    # =========================
-    # SAVE IMAGE (STABLE)
-    # =========================
     os.makedirs("content/images", exist_ok=True)
 
-    filename = f"fashion_{int(time.time())}.jpg"
+    filename = f"fashion_{int(time.time())}_{index}.jpg"
     path = f"content/images/{filename}"
 
     with open(path, "wb") as f:
         f.write(image_bytes)
 
-    print("Image saved:", path)
-
+    print("Saved:", path)
     return path
 
 # =========================
-# RUN
+# RUN 4 IMAGES
 # =========================
 if __name__ == "__main__":
-    generate_image(prompt)
+    paths = []
+
+    for i in range(4):
+        p = generate_image(base_prompt, i)
+        paths.append(p)
+        time.sleep(1)
+
+    print("\nDONE:")
+    print(paths)
