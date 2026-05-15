@@ -42,6 +42,8 @@ jobs:
       # ✅ generator çalıştır
       - name: Run generator
         run: python scripts/generator.py
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
       # ✅ commit + push
       - name: Commit changes
