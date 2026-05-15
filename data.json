@@ -1,8 +1,8 @@
 {
-  "model": "hyper realistic female fashion model, natural skin texture, editorial gaze",
-  "clothing": "tight latex bodycon dress, glossy material, fashion editorial style",
-  "scene": "studio black void with volumetric lighting, high contrast shadows",
-  "environment": "luxury fashion photography studio, cinematic lighting setup, reflective floor",
-  "technical": "8K RAW, Phase One XF, 80mm lens, f/1.4, ISO 100",
-  "negative": "anime, illustration, cartoon, watermark, text, logo"
+  "model": "hyper realistic fashion model, editorial face, soft skin texture",
+  "clothing": "high fashion futuristic outfit, glossy fabric, runway style",
+  "scene": "dark studio, cinematic lighting, soft fog, reflective floor",
+  "environment": "luxury fashion photography studio setup",
+  "technical": "8K RAW, DSLR, 85mm lens, f/1.4, ISO 100",
+  "negative": "low quality, blurry, cartoon, anime, watermark, text"
 }
