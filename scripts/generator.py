@@ -74,6 +74,6 @@ os.system(f'curl -L "{image_url}" -o "{file}"')
 data["image"] = file
 data["date"] = time.ctime()
 
-with open("content/data.json","a") as f:
-json.dump(data,f)
+with open("data.json","w") as f:
+    json.dump(data, f, ensure_ascii=False, indent=2)
 f.write("\n")
