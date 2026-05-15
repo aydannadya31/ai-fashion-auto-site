@@ -1,78 +1,118 @@
-import random, time, json, urllib.parse, os
+import json
+import random
+import time
+import os
 
-timestamp = int(time.time())
+DATA_FILE = "data.json"
 
-# ---------- MODEL BLOĞU ----------
-models = [
-"full body female fashion model, sharp jawline, porcelain skin texture, intense editorial gaze, sleek wet hair",
-"full body female couture model, symmetrical face, flawless skin microtexture, confident runway pose",
+ENVIRONMENTS = [
+    "brutalist concrete studio",
+    "liquid metal reflective floor",
+    "black void reflection room",
+    "minimalist luxury fashion studio"
 ]
 
-# ---------- KUMAŞ ----------
-fabrics = [
-"liquid metal fabric reflecting sharp studio highlights",
-"micro ribbed technical silk with specular reflections",
-"transparent technical mesh with layered tension",
+LIGHTING = [
+    "cinematic rim lighting",
+    "high contrast editorial lighting",
+    "Blade Runner neon reflections",
+    "soft volumetric studio fog lighting"
 ]
 
-# ---------- ORTAM ----------
-environments = [
-"brutalist concrete studio with volumetric fog",
-"black reflective void chamber",
-"liquid chrome editorial environment",
+FABRICS = [
+    "ultra glossy latex",
+    "micro-rib technical silk",
+    "transparent engineered mesh",
+    "liquid metal fabric",
+    "recycled ocean polymer textile"
 ]
 
-# ---------- IŞIK ----------
-lighting = [
-"cinematic rim lighting, high contrast minimal shadows",
-"blade runner neon reflections with controlled shadow gradients",
-"editorial studio flash system with volumetric diffusion",
-]
+NEGATIVE = "anime, illustration, drawing, male, child, watermark, logo, text"
 
-model = random.choice(models)
-fabric = random.choice(fabrics)
-environment = random.choice(environments)
-light = random.choice(lighting)
 
-imagePrompt = f"""
-[MODEL FEATURES]: {model}
-[CLOTHING FEATURES]: bodycon architectural dress, laser cut edges, reinforced seams, anatomical precision interacting with body structure, {fabric}
-[EDITORIAL ENVIRONMENT]: {environment}, {light}
-[TECHNICAL TAGS]: Phase One XF, 80mm lens, f/1.4, ISO 100, 8K RAW fashion photography
+def generate_prompt():
+    env = random.choice(ENVIRONMENTS)
+    light = random.choice(LIGHTING)
+    fabric = random.choice(FABRICS)
 
-The models' faces must not change or become distorted; their facial features must be preserved from every shooting angle. There must be no anatomical distortion.
+    return f"""
+[MODEL ÖZELLİKLERİ]
+hyper realistic female fashion model,
+natural skin micro texture,
+editorial gaze, modern hairstyle
+
+[GİYİM ÖZELLİKLERİ]
+tight short bodycon dress made from {fabric},
+laser cut edges,
+architectural silhouette,
+precision structural seams
+
+[EDİTÖRYAL ORTAM]
+{env},
+{light},
+studio flashes,
+volumetric fog
+
+[TEKNİK ETİKETLER]
+8K RAW fashion photography,
+Phase One XF,
+80mm lens,
+f/1.4,
+ISO 100
+
+The models' faces must not change or become distorted.
+No anatomical distortion allowed.
+
+NEGATIVE PROMPT:
+{NEGATIVE}
 """
 
-displayDescription = "A high-fashion editorial piece exploring material precision, architectural silhouette, and modern couture aesthetics."
 
-slug = f"ai-fashion-look-{timestamp}"
+def generate_seo():
+    number = random.randint(1000, 9999)
+    title = f"Luxury AI Fashion Look {number}"
 
-seo = {
-"title": "AI High Fashion Editorial Look",
-"slug": slug,
-"category": "AI Fashion",
-"pinterest": "High Fashion AI Editorial Outfit Inspiration",
-"hashtags": "#AIFashion #HighFashion #EditorialFashion #FashionDesign"
-}
+    return {
+        "seo_title": title,
+        "slug": title.lower().replace(" ", "-"),
+        "category": "AI Fashion Editorial",
+        "pinterest_title": title + " | High Fashion AI Style",
+        "hashtags": [
+            "#aifashion",
+            "#luxurystyle",
+            "#fashioneditorial",
+            "#runwaystyle",
+            "#digitalfashion"
+        ]
+    }
 
-data = {
-"title": seo["title"],
-"prompt": imagePrompt,
-"description": displayDescription,
-"seo": seo
-}
 
-os.makedirs("content/images", exist_ok=True)
+def load_data():
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return []
 
-safe_prompt = urllib.parse.quote(imagePrompt)
 
-image_url = f"https://image.pollinations.ai/prompt/{safe_prompt}"
-file = f"content/images/{slug}.jpg"
+def save_data(data):
+    with open(DATA_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
 
-os.system(f'curl -L "{image_url}" -o "{file}"')
 
-data["image"] = file
-data["date"] = time.ctime()
+def main():
+    data = load_data()
 
-with open("data.json", "w", encoding="utf-8") as f:
-    json.dump(data, f, ensure_ascii=False, indent=2)
+    entry = {
+        "id": int(time.time()),
+        "prompt": generate_prompt(),
+        **generate_seo()
+    }
+
+    data.insert(0, entry)
+    save_data(data)
+
+    print("New fashion entry generated")
+
+
+if __name__ == "__main__":
+    main()
