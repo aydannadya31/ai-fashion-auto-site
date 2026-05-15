@@ -5,6 +5,9 @@ import base64
 import time
 import random
 
+# =========================
+# CONFIG
+# =========================
 CF_API_TOKEN = os.environ["CF_API_TOKEN"]
 CF_ACCOUNT_ID = os.environ["CF_ACCOUNT_ID"]
 
@@ -15,37 +18,58 @@ headers = {
     "Content-Type": "application/json"
 }
 
+# =========================
+# LOAD DATA
+# =========================
 with open("data.json", "r", encoding="utf-8") as f:
     data = json.load(f)
 
 if isinstance(data, list):
     data = data[0]
 
+model = data.get("model", "")
+clothing = data.get("clothing", "")
+scene = data.get("scene", "")
+environment = data.get("environment", "")
+technical = data.get("technical", "")
+
+# =========================
+# STYLE VARIANTS
+# =========================
 styles = [
-    "editorial runway fashion",
-    "luxury fashion studio shoot",
-    "cinematic high fashion portrait",
-    "avant-garde magazine cover"
+    "editorial runway fashion photography",
+    "luxury high-end studio shoot",
+    "cinematic fashion portrait lighting",
+    "avant-garde fashion magazine cover"
 ]
 
 style = random.choice(styles)
 
+# =========================
+# PROMPT
+# =========================
 base_prompt = f"""
-{data.get('model','')},
-{data.get('clothing','')},
-{data.get('scene','')},
-{data.get('environment','')},
-{data.get('technical','')},
+{model},
+{clothing},
+{scene},
+{environment},
+{technical},
 {style},
-ultra realistic fashion photography
+ultra realistic fashion photography, cinematic lighting, high detail
 """
 
 print("Prompt created")
+print(base_prompt)
+
+# =========================
+# IMAGE GENERATION
+# =========================
+BASE_URL = "https://raw.githubusercontent.com/aydannadya31/ai-fashion-auto-site/main/"
 
 def generate(i):
     res = requests.post(url, headers=headers, json={"prompt": base_prompt})
 
-    print("STATUS:", res.status_code)
+    print("\nSTATUS:", res.status_code)
 
     result = res.json()
 
@@ -53,39 +77,31 @@ def generate(i):
 
     os.makedirs("content/images", exist_ok=True)
 
-    path = f"content/images/fashion_{int(time.time())}_{i}.jpg"
+    filename = f"fashion_{int(time.time())}_{i}.jpg"
+    local_path = f"content/images/{filename}"
 
-    with open(path, "wb") as f:
+    with open(local_path, "wb") as f:
         f.write(img)
 
-    return path
+    # 🔥 IMPORTANT FIX: PUBLIC URL
+    public_url = BASE_URL + local_path
 
+    print("Saved:", public_url)
+
+    return public_url
+
+# =========================
+# RUN 4 IMAGES
+# =========================
 paths = []
 
 for i in range(4):
     paths.append(generate(i))
     time.sleep(1)
 
-caption = f"AI Fashion Drop — {style}"
-
-meta = {
-    "style": style,
-    "prompt": base_prompt,
-    "images": paths,
-    "caption": caption,
-    "timestamp": int(time.time())
-}
-
-os.makedirs("content", exist_ok=True)
-
-with open("content/post.json", "w") as f:
-    json.dump(meta, f, indent=2)
-
-print("LEVEL 4 COMPLETE")
 # =========================
-# SAVE POST JSON (FIX)
+# POST JSON (FEED)
 # =========================
-
 os.makedirs("content", exist_ok=True)
 
 post = {
@@ -99,4 +115,5 @@ post = {
 with open("content/post.json", "w", encoding="utf-8") as f:
     json.dump(post, f, indent=2)
 
-print("POST JSON CREATED -> content/post.json")
+print("\nPOST CREATED -> content/post.json")
+print("DONE ✔ SYSTEM READY")
