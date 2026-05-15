@@ -41,7 +41,7 @@ jobs:
 
       # ✅ generator çalıştır
       - name: Run generator
-        run: python generate.py
+        run: python scripts/generator.py
 
       # ✅ commit + push
       - name: Commit changes
