@@ -1,0 +1,69 @@
+{
+  "imagePromptRules": {
+    "base_directives": [
+      "Models are always full-body visible",
+      "Lighting must ensure full facial clarity and micro-detail visibility",
+      "8K, RAW, ultra-detailed AI fashion output",
+      "Luxury editorial fashion photography standard"
+    ],
+
+    "structure_blocks": {
+      "MODEL_FEATURES": "facial structure, skin micro-texture, gaze intensity, hairstyle, editorial pose",
+      "CLOTHING_FEATURES": "fabric density, laser-cut edges, stitching details, body-hugging anatomical design, tension and flow of material",
+      "EDITORIAL_ENVIRONMENT": "studio setup, volumetric fog, cinematic shadows, reflective surfaces, controlled lighting architecture",
+      "TECHNICAL_TAGS": "Phase One XF, 80mm lens, f/1.4, ISO 100, ultra realistic photography"
+    },
+
+    "quality_rule": "The models' faces must not change or become distorted; facial structure must remain consistent across all angles. No anatomical distortion is allowed.",
+
+    "dynamic_elements": {
+      "environments": [
+        "brutalist concrete studio",
+        "black void reflection room",
+        "liquid metal floor environment",
+        "futuristic fashion runway tunnel"
+      ],
+      "lighting": [
+        "high contrast cinematic lighting",
+        "neon rim lighting",
+        "soft volumetric studio fog",
+        "blade runner inspired lighting"
+      ],
+      "materials": [
+        "ultra glossy latex",
+        "transparent technical fabric",
+        "liquid metal textile",
+        "high density micro-fiber fabric"
+      ]
+    }
+  },
+
+  "garmentRules": {
+    "silhouette": [
+      "tight bodycon second-skin fit",
+      "architectural asymmetric cuts",
+      "modern high fashion aesthetic"
+    ],
+
+    "materials": [
+      "liquid metal fabric",
+      "micro ribbed technical silk",
+      "transparent high-tech mesh",
+      "ultra thin luxury crepe"
+    ],
+
+    "construction": [
+      "laser-cut seamless edges",
+      "structural stitching patterns",
+      "anatomical precision tailoring"
+    ],
+
+    "quality": [
+      "no facial distortion",
+      "8K RAW fashion photography required",
+      "cinematic studio lighting mandatory"
+    ],
+
+    "style_language": "luxury fashion editorial catalog description style"
+  }
+}
