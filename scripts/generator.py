@@ -1,38 +1,5 @@
-import os
-import json
-import requests
-import base64
-
-CF_API_TOKEN = os.environ["CF_API_TOKEN"]
-CF_ACCOUNT_ID = os.environ["CF_ACCOUNT_ID"]
-
-with open("data.json", "r", encoding="utf-8") as f:
-    data = json.load(f)
-
-if isinstance(data, list):
-    data = data[0]
-
-model = data.get("model", "")
-clothing = data.get("clothing", "")
-scene = data.get("scene", "")
-environment = data.get("environment", "")
-technical = data.get("technical", "")
-negative = data.get("negative", "")
-
-prompt = f"""
-{model},
-{clothing},
-{scene},
-{environment},
-{technical},
-ultra realistic fashion photography, editorial lighting, cinematic composition
-"""
-
-print("Prompt created.")
-print(prompt)
-
 def generate_image(prompt):
-    url = f"https://api.cloudflare.com/client/v4/accounts/{CF_ACCOUNT_ID}/ai/run/@cf/stabilityai/stable-diffusion-xl-base-1.0"
+    url = f"https://api.cloudflare.com/client/v4/accounts/{CF_ACCOUNT_ID}/ai/run/@cf/black-forest-labs/flux-1-schnell"
 
     headers = {
         "Authorization": f"Bearer {CF_API_TOKEN}",
@@ -42,6 +9,13 @@ def generate_image(prompt):
     payload = {"prompt": prompt}
 
     response = requests.post(url, headers=headers, json=payload)
+
+    print("STATUS:", response.status_code)
+    print("RAW:", response.text[:500])
+
+    if response.status_code != 200:
+        raise Exception(f"HTTP ERROR: {response.text}")
+
     result = response.json()
 
     if not result.get("success"):
@@ -58,6 +32,3 @@ def generate_image(prompt):
 
     print("Image saved:", path)
     return path
-
-if __name__ == "__main__":
-    generate_image(prompt)
