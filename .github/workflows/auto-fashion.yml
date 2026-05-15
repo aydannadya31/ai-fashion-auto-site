@@ -9,37 +9,38 @@ jobs:
   generate:
     runs-on: ubuntu-latest
 
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    permissions:
+      contents: write
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Create folders
+      - name: Prepare folders
         run: |
           mkdir -p content/images
           touch content/data.json
 
-      - name: Generate AI Fashion Image
+      - name: Generate AI Image
         run: |
           TIMESTAMP=$(date +%s)
-          PROMPT="modern fashion editorial woman outfit $TIMESTAMP"
 
-          SAFE_PROMPT=$(echo $PROMPT | sed 's/ /%20/g')
+          PROMPT="modern fashion editorial woman outfit"
+
+          SAFE_PROMPT=$(python3 -c "import urllib.parse; print(urllib.parse.quote('''$PROMPT'''))")
 
           IMAGE_URL="https://image.pollinations.ai/prompt/$SAFE_PROMPT"
 
           FILE="content/images/fashion_$TIMESTAMP.jpg"
 
-          curl -f -L "$IMAGE_URL" -o "$FILE"
+          curl -L "$IMAGE_URL" --output "$FILE"
 
           echo "{\"title\":\"AI Fashion Look\",\"prompt\":\"$PROMPT\",\"image\":\"$FILE\",\"date\":\"$(date)\"}" >> content/data.json
 
-      - name: Commit and push
+      - name: Commit changes
         run: |
           git config user.name "AI Bot"
           git config user.email "bot@github.com"
           git add .
-          git commit -m "Auto AI fashion image" || echo "Nothing to commit"
+          git commit -m "Auto AI fashion image" || echo "No changes"
           git push
