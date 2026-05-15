@@ -8,39 +8,24 @@ on:
 jobs:
   generate:
     runs-on: ubuntu-latest
-
     permissions:
       contents: write
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Prepare folders
-        run: |
-          mkdir -p content/images
-          touch content/data.json
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-      - name: Generate AI Image
-        run: |
-          TIMESTAMP=$(date +%s)
+      - name: Run Fashion Engine
+        run: python scripts/generator.py
 
-          PROMPT="modern fashion editorial woman outfit"
-
-          SAFE_PROMPT=$(python3 -c "import urllib.parse; print(urllib.parse.quote('''$PROMPT'''))")
-
-          IMAGE_URL="https://image.pollinations.ai/prompt/$SAFE_PROMPT"
-
-          FILE="content/images/fashion_$TIMESTAMP.jpg"
-
-          curl -L "$IMAGE_URL" --output "$FILE"
-
-          echo "{\"title\":\"AI Fashion Look\",\"prompt\":\"$PROMPT\",\"image\":\"$FILE\",\"date\":\"$(date)\"}" >> content/data.json
-
-      - name: Commit changes
+      - name: Commit
         run: |
           git config user.name "AI Bot"
           git config user.email "bot@github.com"
           git add .
-          git commit -m "Auto AI fashion image" || echo "No changes"
+          git commit -m "New AI Fashion Editorial" || echo "No changes"
           git push
