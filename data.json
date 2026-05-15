@@ -1,17 +1,7 @@
-[
-  {
-    "id": 1778847645,
-    "prompt": "\n[MODEL ÖZELLİKLERİ]\nhyper realistic female fashion model,\nnatural skin micro texture,\neditorial gaze, modern hairstyle\n\n[GİYİM ÖZELLİKLERİ]\ntight short bodycon dress made from ultra glossy latex,\nlaser cut edges,\narchitectural silhouette,\nprecision structural seams\n\n[EDİTÖRYAL ORTAM]\nblack void reflection room,\nhigh contrast editorial lighting,\nstudio flashes,\nvolumetric fog\n\n[TEKNİK ETİKETLER]\n8K RAW fashion photography,\nPhase One XF,\n80mm lens,\nf/1.4,\nISO 100\n\nThe models' faces must not change or become distorted.\nNo anatomical distortion allowed.\n\nNEGATIVE PROMPT:\nanime, illustration, drawing, male, child, watermark, logo, text\n",
-    "seo_title": "Luxury AI Fashion Look 2748",
-    "slug": "luxury-ai-fashion-look-2748",
-    "category": "AI Fashion Editorial",
-    "pinterest_title": "Luxury AI Fashion Look 2748 | High Fashion AI Style",
-    "hashtags": [
-      "#aifashion",
-      "#luxurystyle",
-      "#fashioneditorial",
-      "#runwaystyle",
-      "#digitalfashion"
-    ]
-  }
-]
+{
+  "model": "hyper realistic female fashion model, natural skin micro texture, editorial gaze, modern hairstyle",
+  "clothing": "tight short bodycon dress made from ultra glossy latex, laser cut edges, architectural silhouette",
+  "scene": "black void reflection room, high contrast editorial lighting, volumetric fog",
+  "technical": "8K RAW fashion photography, Phase One XF, 80mm lens, f/1.4, ISO 100",
+  "negative": "anime, illustration, drawing, male, child, watermark, logo, text"
+}
