@@ -1,94 +1,84 @@
 import os
 import json
-import time
+import requests
 import base64
-from openai import OpenAI
 
-# ===============================
-# OPENAI CLIENT
-# ===============================
+# =========================
+# CLOUDFARE CONFIG
+# =========================
+CF_API_TOKEN = os.environ["CF_API_TOKEN"]
+CF_ACCOUNT_ID = os.environ["CF_ACCOUNT_ID"]
 
-client = OpenAI(
-    api_key=os.getenv("OPENAI_API_KEY")
-)
-
-# ===============================
-# LOAD DATA.JSON
-# ===============================
-
+# =========================
+# LOAD DATA
+# =========================
 with open("data.json", "r", encoding="utf-8") as f:
     data = json.load(f)
 
-model_features = data["model"]
-clothing_features = data["clothing"]
-environment_features = data["environment"]
-technical_tags = data["technical"]
+# safety: list gelirse düzelt
+if isinstance(data, list):
+    data = data[0]
 
-# ===============================
-# BUILD PROMPT
-# ===============================
+model = data.get("model", "")
+clothing = data.get("clothing", "")
+scene = data.get("scene", "")
+environment = data.get("environment", "")
+technical = data.get("technical", "")
+negative = data.get("negative", "")
 
-timestamp = int(time.time())
-title = f"Luxury AI Fashion Look {timestamp}"
-
+# =========================
+# PROMPT BUILD
+# =========================
 prompt = f"""
-[MODEL FEATURES]
-{model_features}
-
-[CLOTHING FEATURES]
-{clothing_features}
-
-[EDITORIAL ENVIRONMENT]
-{environment_features}
-
-[TECHNICAL TAGS]
-{technical_tags}
-
-The models' faces must not change or become distorted.
-No anatomical distortion allowed.
-
-NEGATIVE PROMPT:
-anime, illustration, drawing, male, child, watermark, logo, text
+{model},
+{clothing},
+{scene},
+{environment},
+{technical},
+ultra realistic fashion photography, editorial style, cinematic lighting
 """
 
 print("Prompt created.")
+print(prompt)
 
-# ===============================
-# GENERATE IMAGE
-# ===============================
+# =========================
+# CLOUDFARE IMAGE GENERATION
+# =========================
+def generate_image(prompt):
+    url = f"https://api.cloudflare.com/client/v4/accounts/{CF_ACCOUNT_ID}/ai/run/@cf/stabilityai/stable-diffusion-xl-base-1.0"
 
-print("Generating AI image...")
+    headers = {
+        "Authorization": f"Bearer {CF_API_TOKEN}",
+        "Content-Type": "application/json"
+    }
 
-result = client.images.generate(
-    model="gpt-image-1",
-    prompt=prompt,
-    size="1024x1024"
-)
+    payload = {
+        "prompt": prompt
+    }
 
-image_base64 = result.data[0].b64_json
-image_bytes = base64.b64decode(image_base64)
+    response = requests.post(url, headers=headers, json=payload)
+    result = response.json()
 
-image_name = f"fashion_{timestamp}.png"
-image_path = f"images/{image_name}"
+    if not result.get("success"):
+        raise Exception(f"Cloudflare error: {result}")
 
-os.makedirs("images", exist_ok=True)
+    # Cloudflare SDXL base64 image döndürür
+    image_base64 = result["result"]["image"]
+    image_bytes = base64.b64decode(image_base64)
 
-with open(image_path, "wb") as img:
-    img.write(image_bytes)
+    # klasör oluştur
+    os.makedirs("images", exist_ok=True)
 
-print("Image saved:", image_path)
+    path = "images/output.png"
 
-# ===============================
-# CREATE CONTENT POST
-# ===============================
+    with open(path, "wb") as f:
+        f.write(image_bytes)
 
-os.makedirs("content", exist_ok=True)
+    print("Image saved:", path)
+    return path
 
-post_path = f"content/post-{timestamp}.md"
-
-with open(post_path, "w", encoding="utf-8") as f:
-    f.write(f"# {title}\n\n")
-    f.write(f"![AI Fashion](/images/{image_name})\n\n")
-    f.write(prompt)
-
-print("Post created:", post_path)
+# =========================
+# RUN
+# =========================
+if __name__ == "__main__":
+    generate_image(prompt)
