@@ -5,9 +5,6 @@ import base64
 import time
 import random
 
-# =========================
-# CLOUDFARE CONFIG
-# =========================
 CF_API_TOKEN = os.environ["CF_API_TOKEN"]
 CF_ACCOUNT_ID = os.environ["CF_ACCOUNT_ID"]
 
@@ -18,110 +15,58 @@ headers = {
     "Content-Type": "application/json"
 }
 
-# =========================
-# LOAD DATA
-# =========================
 with open("data.json", "r", encoding="utf-8") as f:
     data = json.load(f)
 
 if isinstance(data, list):
     data = data[0]
 
-model = data.get("model", "")
-clothing = data.get("clothing", "")
-scene = data.get("scene", "")
-environment = data.get("environment", "")
-technical = data.get("technical", "")
-
-# =========================
-# STYLE VARIANTS
-# =========================
 styles = [
-    "editorial runway fashion photography",
-    "luxury high-end studio shoot",
-    "cinematic fashion portrait lighting",
-    "avant-garde fashion magazine cover"
+    "editorial runway fashion",
+    "luxury fashion studio shoot",
+    "cinematic high fashion portrait",
+    "avant-garde magazine cover"
 ]
 
 style = random.choice(styles)
 
-# =========================
-# PROMPT
-# =========================
 base_prompt = f"""
-{model},
-{clothing},
-{scene},
-{environment},
-{technical},
+{data.get('model','')},
+{data.get('clothing','')},
+{data.get('scene','')},
+{data.get('environment','')},
+{data.get('technical','')},
 {style},
-ultra realistic fashion photography, cinematic lighting, high detail
+ultra realistic fashion photography
 """
 
-print("Prompt created:")
-print(base_prompt)
+print("Prompt created")
 
-# =========================
-# GENERATE MULTIPLE IMAGES
-# =========================
-def generate_image(prompt, index):
-    payload = {"prompt": prompt}
+def generate(i):
+    res = requests.post(url, headers=headers, json={"prompt": base_prompt})
 
-    response = requests.post(url, headers=headers, json=payload)
+    print("STATUS:", res.status_code)
 
-    print(f"\n--- IMAGE {index} ---")
-    print("STATUS:", response.status_code)
-    print("RAW:", response.text[:200])
+    result = res.json()
 
-    if response.status_code != 200:
-        raise Exception(response.text)
-
-    result = response.json()
-
-    if not result.get("success"):
-        raise Exception(result)
-
-    image_base64 = result["result"]["image"]
-    image_bytes = base64.b64decode(image_base64)
-
-    if len(image_bytes) < 1000:
-        raise Exception("Empty image")
+    img = base64.b64decode(result["result"]["image"])
 
     os.makedirs("content/images", exist_ok=True)
 
-    filename = f"fashion_{int(time.time())}_{index}.jpg"
-    path = f"content/images/{filename}"
+    path = f"content/images/fashion_{int(time.time())}_{i}.jpg"
 
     with open(path, "wb") as f:
-        f.write(image_bytes)
+        f.write(img)
 
-    print("Saved:", path)
     return path
 
-# =========================
-# RUN 4 IMAGES
-# =========================
-if __name__ == "__main__":
-    paths = []
+paths = []
 
-    for i in range(4):
-        p = generate_image(base_prompt, i)
-        paths.append(p)
-        time.sleep(1)
+for i in range(4):
+    paths.append(generate(i))
+    time.sleep(1)
 
-    print("\nDONE:")
-    print(paths)
-import json
-import os
-import time
-
-caption = f"""
-AI Fashion Drop
-
-Style: {style}
-Concept: futuristic editorial fashion
-Generated automatically by AI system
-"""
+caption = f"AI Fashion Drop — {style}"
 
 meta = {
     "style": style,
@@ -133,7 +78,7 @@ meta = {
 
 os.makedirs("content", exist_ok=True)
 
-with open("content/post.json", "w", encoding="utf-8") as f:
+with open("content/post.json", "w") as f:
     json.dump(meta, f, indent=2)
 
-print("\nMETA SAVED -> content/post.json")
+print("LEVEL 4 COMPLETE")
