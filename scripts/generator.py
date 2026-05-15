@@ -82,3 +82,21 @@ with open("content/post.json", "w") as f:
     json.dump(meta, f, indent=2)
 
 print("LEVEL 4 COMPLETE")
+# =========================
+# SAVE POST JSON (FIX)
+# =========================
+
+os.makedirs("content", exist_ok=True)
+
+post = {
+    "style": style,
+    "prompt": base_prompt,
+    "images": paths,
+    "caption": f"AI Fashion Drop — {style}",
+    "timestamp": int(time.time())
+}
+
+with open("content/post.json", "w", encoding="utf-8") as f:
+    json.dump(post, f, indent=2)
+
+print("POST JSON CREATED -> content/post.json")
