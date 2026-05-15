@@ -1,0 +1,12 @@
+{
+  "style": "cinematic high fashion portrait",
+  "prompt": "\nhyper realistic fashion model, editorial face, soft skin texture,\nhigh fashion futuristic outfit, glossy fabric, runway style,\ndark studio, cinematic lighting, soft fog, reflective floor,\nluxury fashion photography studio setup,\n8K RAW, DSLR, 85mm lens, f/1.4, ISO 100,\ncinematic high fashion portrait,\nultra realistic fashion photography\n",
+  "images": [
+    "content/images/fashion_1778854616_0.jpg",
+    "content/images/fashion_1778854618_1.jpg",
+    "content/images/fashion_1778854621_2.jpg",
+    "content/images/fashion_1778854624_3.jpg"
+  ],
+  "caption": "AI Fashion Drop \u2014 cinematic high fashion portrait",
+  "timestamp": 1778854625
+}
