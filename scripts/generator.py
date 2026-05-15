@@ -1,118 +1,94 @@
-import json
-import random
-import time
 import os
+import json
+import time
+import base64
+from openai import OpenAI
 
-DATA_FILE = "data.json"
+# ===============================
+# OPENAI CLIENT
+# ===============================
 
-ENVIRONMENTS = [
-    "brutalist concrete studio",
-    "liquid metal reflective floor",
-    "black void reflection room",
-    "minimalist luxury fashion studio"
-]
+client = OpenAI(
+    api_key=os.getenv("OPENAI_API_KEY")
+)
 
-LIGHTING = [
-    "cinematic rim lighting",
-    "high contrast editorial lighting",
-    "Blade Runner neon reflections",
-    "soft volumetric studio fog lighting"
-]
+# ===============================
+# LOAD DATA.JSON
+# ===============================
 
-FABRICS = [
-    "ultra glossy latex",
-    "micro-rib technical silk",
-    "transparent engineered mesh",
-    "liquid metal fabric",
-    "recycled ocean polymer textile"
-]
+with open("data.json", "r", encoding="utf-8") as f:
+    data = json.load(f)
 
-NEGATIVE = "anime, illustration, drawing, male, child, watermark, logo, text"
+model_features = data["model"]
+clothing_features = data["clothing"]
+environment_features = data["environment"]
+technical_tags = data["technical"]
 
+# ===============================
+# BUILD PROMPT
+# ===============================
 
-def generate_prompt():
-    env = random.choice(ENVIRONMENTS)
-    light = random.choice(LIGHTING)
-    fabric = random.choice(FABRICS)
+timestamp = int(time.time())
+title = f"Luxury AI Fashion Look {timestamp}"
 
-    return f"""
-[MODEL ÖZELLİKLERİ]
-hyper realistic female fashion model,
-natural skin micro texture,
-editorial gaze, modern hairstyle
+prompt = f"""
+[MODEL FEATURES]
+{model_features}
 
-[GİYİM ÖZELLİKLERİ]
-tight short bodycon dress made from {fabric},
-laser cut edges,
-architectural silhouette,
-precision structural seams
+[CLOTHING FEATURES]
+{clothing_features}
 
-[EDİTÖRYAL ORTAM]
-{env},
-{light},
-studio flashes,
-volumetric fog
+[EDITORIAL ENVIRONMENT]
+{environment_features}
 
-[TEKNİK ETİKETLER]
-8K RAW fashion photography,
-Phase One XF,
-80mm lens,
-f/1.4,
-ISO 100
+[TECHNICAL TAGS]
+{technical_tags}
 
 The models' faces must not change or become distorted.
 No anatomical distortion allowed.
 
 NEGATIVE PROMPT:
-{NEGATIVE}
+anime, illustration, drawing, male, child, watermark, logo, text
 """
 
+print("Prompt created.")
 
-def generate_seo():
-    number = random.randint(1000, 9999)
-    title = f"Luxury AI Fashion Look {number}"
+# ===============================
+# GENERATE IMAGE
+# ===============================
 
-    return {
-        "seo_title": title,
-        "slug": title.lower().replace(" ", "-"),
-        "category": "AI Fashion Editorial",
-        "pinterest_title": title + " | High Fashion AI Style",
-        "hashtags": [
-            "#aifashion",
-            "#luxurystyle",
-            "#fashioneditorial",
-            "#runwaystyle",
-            "#digitalfashion"
-        ]
-    }
+print("Generating AI image...")
 
+result = client.images.generate(
+    model="gpt-image-1",
+    prompt=prompt,
+    size="1024x1024"
+)
 
-def load_data():
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return []
+image_base64 = result.data[0].b64_json
+image_bytes = base64.b64decode(image_base64)
 
+image_name = f"fashion_{timestamp}.png"
+image_path = f"images/{image_name}"
 
-def save_data(data):
-    with open(DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
+os.makedirs("images", exist_ok=True)
 
+with open(image_path, "wb") as img:
+    img.write(image_bytes)
 
-def main():
-    data = load_data()
+print("Image saved:", image_path)
 
-    entry = {
-        "id": int(time.time()),
-        "prompt": generate_prompt(),
-        **generate_seo()
-    }
+# ===============================
+# CREATE CONTENT POST
+# ===============================
 
-    data.insert(0, entry)
-    save_data(data)
+os.makedirs("content", exist_ok=True)
 
-    print("New fashion entry generated")
+post_path = f"content/post-{timestamp}.md"
 
+with open(post_path, "w", encoding="utf-8") as f:
+    f.write(f"# {title}\n\n")
+    f.write(f"![AI Fashion](/images/{image_name})\n\n")
+    f.write(prompt)
 
-if __name__ == "__main__":
-    main()
+print("Post created:", post_path)
