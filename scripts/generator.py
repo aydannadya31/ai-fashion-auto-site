@@ -111,3 +111,29 @@ if __name__ == "__main__":
 
     print("\nDONE:")
     print(paths)
+import json
+import os
+import time
+
+caption = f"""
+AI Fashion Drop
+
+Style: {style}
+Concept: futuristic editorial fashion
+Generated automatically by AI system
+"""
+
+meta = {
+    "style": style,
+    "prompt": base_prompt,
+    "images": paths,
+    "caption": caption,
+    "timestamp": int(time.time())
+}
+
+os.makedirs("content", exist_ok=True)
+
+with open("content/post.json", "w", encoding="utf-8") as f:
+    json.dump(meta, f, indent=2)
+
+print("\nMETA SAVED -> content/post.json")
