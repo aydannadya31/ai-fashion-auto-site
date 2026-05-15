@@ -10,31 +10,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Repo
+        uses: actions/checkout@v4
 
       - name: Generate Fashion Image
         run: |
           mkdir -p content/images
 
-          PROMPT="modern fashion editorial woman outfit $(date +%s)"
+          TIMESTAMP=$(date +%s)
+          PROMPT="modern fashion editorial woman outfit $TIMESTAMP"
 
-          IMAGE_URL="https://image.pollinations.ai/prompt/${PROMPT}"
+          IMAGE_URL="https://image.pollinations.ai/prompt/$PROMPT"
 
-          FILE="content/images/fashion_$(date +%s).jpg"
+          FILE="content/images/fashion_$TIMESTAMP.jpg"
 
           curl -L "$IMAGE_URL" -o "$FILE"
 
-          echo "{
-            \"title\": \"AI Fashion Look\",
-            \"prompt\": \"$PROMPT\",
-            \"image\": \"$FILE\",
-            \"date\": \"$(date)\"
-          }" >> content/data.json
+          echo "{\"title\":\"AI Fashion Look\",\"prompt\":\"$PROMPT\",\"image\":\"$FILE\",\"date\":\"$(date)\"}" >> content/data.json
 
       - name: Commit Changes
         run: |
-          git config --global user.name "AI Bot"
-          git config --global user.email "bot@github.com"
+          git config user.name "AI Bot"
+          git config user.email "bot@github.com"
           git add .
           git commit -m "New AI Fashion Image" || echo "No changes"
           git push
