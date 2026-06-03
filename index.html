@@ -13,9 +13,15 @@
       min-height: 100vh;
     }
     header {
-      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       padding: 40px 20px 20px;
       border-bottom: 1px solid #1a1a1a;
+      position: relative;
+    }
+    header .title-group {
+      text-align: center;
     }
     header h1 {
       font-size: 2rem;
@@ -29,6 +35,107 @@
       font-size: 0.85rem;
       color: #666;
       letter-spacing: 2px;
+    }
+    .gen-btn {
+      position: absolute;
+      top: 50%;
+      right: 24px;
+      transform: translateY(-50%);
+      background: #1a1a1a;
+      color: #e0e0e0;
+      border: 1px solid #333;
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .gen-btn:hover {
+      background: #2a2a2a;
+      border-color: #666;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal.active { display: flex; }
+    .modal-box {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 12px;
+      padding: 36px 32px 28px;
+      width: 360px;
+      max-width: 90vw;
+      text-align: center;
+    }
+    .modal-box h2 {
+      font-weight: 300;
+      letter-spacing: 3px;
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+      color: #e0e0e0;
+    }
+    .modal-box input {
+      width: 100%;
+      padding: 12px 14px;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 6px;
+      color: #fff;
+      font-size: 0.9rem;
+      outline: none;
+      margin-bottom: 12px;
+    }
+    .modal-box input:focus {
+      border-color: #666;
+    }
+    .modal-box .actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+    .modal-box button {
+      padding: 10px 24px;
+      border-radius: 6px;
+      border: 1px solid #333;
+      background: #1a1a1a;
+      color: #ccc;
+      cursor: pointer;
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: background 0.3s;
+    }
+    .modal-box button:hover {
+      background: #2a2a2a;
+    }
+    .modal-box .primary {
+      background: #2a2a2a;
+      border-color: #555;
+      color: #fff;
+    }
+    .modal-box .primary:hover {
+      background: #3a3a3a;
+      border-color: #888;
+    }
+    .modal-box .msg {
+      font-size: 0.8rem;
+      margin-top: 10px;
+      color: #888;
+    }
+    .modal-box .msg.error {
+      color: #c55;
+    }
+    .modal-box .msg.success {
+      color: #5a5;
     }
     .container {
       max-width: 1400px;
@@ -126,9 +233,24 @@
 </head>
 <body>
   <header>
-    <h1>AI Fashion Feed</h1>
-    <p>AI-generated fashion photography</p>
+    <div class="title-group">
+      <h1>AI Fashion Feed</h1>
+      <p>AI-generated fashion photography</p>
+    </div>
+    <button class="gen-btn" id="genBtn">Generate!</button>
   </header>
+
+  <div class="modal" id="pwModal">
+    <div class="modal-box">
+      <h2>Generate</h2>
+      <input type="password" id="pwInput" placeholder="Password" autocomplete="off">
+      <div class="actions">
+        <button onclick="closePwModal()">Cancel</button>
+        <button class="primary" onclick="handlePassword()">Confirm</button>
+      </div>
+      <div class="msg" id="pwMsg"></div>
+    </div>
+  </div>
 
   <div class="container">
     <div class="grid" id="feed"></div>
@@ -142,29 +264,38 @@
   <footer>Powered by AI &middot; Updated every 6 hours</footer>
 
   <script>
+    const OWNER = 'aydannadya31';
+    const REPO = 'ai-fashion-auto-site';
+    const WORKFLOW = 'auto-fashion.yml';
+    const PASSWORD = 'Ag1453ag!';
+    const PAT_KEY = 'gh_fashion_pat';
+
     const feed = document.getElementById('feed');
     const lightbox = document.getElementById('lightbox');
     const lightboxImg = document.getElementById('lightbox-img');
+    const genBtn = document.getElementById('genBtn');
+    const pwModal = document.getElementById('pwModal');
+    const pwInput = document.getElementById('pwInput');
+    const pwMsg = document.getElementById('pwMsg');
 
+    /* ---------- lightbox ---------- */
     function openLightbox(src) {
       lightbox.classList.add('active');
       lightboxImg.src = src;
     }
-
     function closeLightbox() {
       lightbox.classList.remove('active');
       lightboxImg.src = '';
     }
-
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') closeLightbox();
     });
-
     lightbox.querySelector('.close').addEventListener('click', (e) => {
       e.stopPropagation();
       closeLightbox();
     });
 
+    /* ---------- feed ---------- */
     fetch('content/post.json')
       .then(r => {
         if (!r.ok) throw new Error('Failed to load');
@@ -192,6 +323,92 @@
       .catch(() => {
         feed.innerHTML = '<div class="error">Content loading...</div>';
       });
+
+    /* ---------- generate ---------- */
+    function showPwModal() {
+      pwMsg.textContent = '';
+      pwMsg.className = 'msg';
+      pwInput.value = '';
+      pwModal.classList.add('active');
+      pwInput.focus();
+    }
+    function closePwModal() {
+      pwModal.classList.remove('active');
+    }
+    pwModal.addEventListener('click', (e) => {
+      if (e.target === pwModal) closePwModal();
+    });
+    pwInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') handlePassword();
+      if (e.key === 'Escape') closePwModal();
+    });
+
+    genBtn.addEventListener('click', showPwModal);
+
+    async function handlePassword() {
+      if (pwInput.value !== PASSWORD) {
+        pwMsg.textContent = 'Wrong password';
+        pwMsg.className = 'msg error';
+        return;
+      }
+      closePwModal();
+
+      let pat = localStorage.getItem(PAT_KEY);
+      if (!pat) {
+        pat = prompt('Enter your GitHub Personal Access Token (with workflow write permission):');
+        if (!pat) return;
+        localStorage.setItem(PAT_KEY, pat);
+      }
+
+      pwMsg.textContent = 'Triggering workflow...';
+      pwMsg.className = 'msg';
+
+      try {
+        const res = await fetch(
+          `https://api.github.com/repos/${OWNER}/${REPO}/actions/workflows/${WORKFLOW}/dispatches`,
+          {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${pat}`,
+              'Content-Type': 'application/json',
+              'Accept': 'application/vnd.github+json'
+            },
+            body: JSON.stringify({ ref: 'main' })
+          }
+        );
+
+        if (!res.ok) {
+          if (res.status === 401 || res.status === 403) {
+            localStorage.removeItem(PAT_KEY);
+            throw new Error('Token invalid or expired. Please re-enter.');
+          }
+          throw new Error(`GitHub API error (${res.status})`);
+        }
+
+        alert('Workflow started! Check Actions tab.');
+        pwMsg.textContent = '';
+      } catch (err) {
+        alert(err.message);
+        pwMsg.textContent = '';
+      }
+    }
+
+    /* ---------- responsive header tweak ---------- */
+    function layoutBtn() {
+      if (window.innerWidth < 600) {
+        genBtn.style.position = 'static';
+        genBtn.style.transform = 'none';
+        genBtn.style.marginTop = '12px';
+        genBtn.style.width = '100%';
+      } else {
+        genBtn.style.position = 'absolute';
+        genBtn.style.transform = 'translateY(-50%)';
+        genBtn.style.marginTop = '0';
+        genBtn.style.width = 'auto';
+      }
+    }
+    layoutBtn();
+    window.addEventListener('resize', layoutBtn);
   </script>
 </body>
 </html>
