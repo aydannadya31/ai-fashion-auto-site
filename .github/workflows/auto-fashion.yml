@@ -5,9 +5,20 @@ on:
   schedule:
     - cron: "0 */6 * * *"
 
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
 jobs:
-  build:
+  generate:
     runs-on: ubuntu-latest
+    outputs:
+      has_changes: ${{ steps.check.outputs.changed }}
 
     steps:
       - uses: actions/checkout@v4
@@ -20,15 +31,41 @@ jobs:
         run: pip install requests
 
       - name: Generate content
+        id: generate
         run: python scripts/generator.py
         env:
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
 
-      - name: Commit
+      - name: Commit changes
+        id: check
         run: |
           git config --global user.name "ai-bot"
           git config --global user.email "bot@ai.com"
-          git add .
-          git commit -m "AI fashion update" || echo "no changes"
-          git push
+          git add -A
+          if git diff --cached --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            git commit -m "AI fashion update $(date +'%Y-%m-%d %H:%M')"
+            git push
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+  deploy:
+    needs: generate
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "."
+
+      - name: Deploy to Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
