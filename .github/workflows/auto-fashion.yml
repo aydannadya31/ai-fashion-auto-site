@@ -37,6 +37,16 @@ jobs:
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
 
+      - name: Update history
+        run: python -c "
+import json, os
+if os.path.exists('content/post.json'):
+    post = json.load(open('content/post.json'))
+    history = json.load(open('content/history.json')) if os.path.exists('content/history.json') else []
+    history.append(post)
+    json.dump(history, open('content/history.json', 'w'), indent=2)
+"
+
       - name: Commit changes
         id: check
         run: |

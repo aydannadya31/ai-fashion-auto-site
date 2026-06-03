@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Galleries - AI Fashion Feed</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a0a;
+      color: #fff;
+      min-height: 100vh;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 20px;
+      border-bottom: 1px solid #1a1a1a;
+      position: relative;
+    }
+    .header-left {
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    header .title-group { text-align: center; }
+    header h1 {
+      font-size: 1.3rem;
+      font-weight: 300;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: #e0e0e0;
+    }
+    .nav-btn {
+      background: #1a1a1a;
+      color: #ccc;
+      border: 1px solid #333;
+      padding: 8px 18px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.3s, border-color 0.3s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .nav-btn:hover {
+      background: #2a2a2a;
+      border-color: #666;
+      color: #fff;
+    }
+    .container {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .info {
+      text-align: center;
+      color: #555;
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+      margin-bottom: 20px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    .card {
+      background: #111;
+      border-radius: 10px;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    }
+    .card img {
+      width: 100%;
+      height: 360px;
+      object-fit: cover;
+      display: block;
+      background: #1a1a1a;
+    }
+    .card-body {
+      padding: 10px;
+    }
+    .card-body .caption {
+      font-size: 0.7rem;
+      color: #999;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .card-body .timestamp {
+      font-size: 0.65rem;
+      color: #555;
+      margin-top: 2px;
+    }
+    .loading, .error, .empty {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 80px 20px;
+      color: #555;
+      font-size: 0.9rem;
+      letter-spacing: 1px;
+    }
+    .lightbox {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.95);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+    }
+    .lightbox.active { display: flex; }
+    .lightbox img {
+      max-width: 100%;
+      max-height: 90vh;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+    .lightbox .close {
+      position: absolute;
+      top: 20px; right: 30px;
+      font-size: 2rem;
+      color: #fff;
+      cursor: pointer;
+      opacity: 0.6;
+      transition: opacity 0.2s;
+      background: none;
+      border: none;
+    }
+    .lightbox .close:hover { opacity: 1; }
+    footer {
+      text-align: center;
+      padding: 24px 20px;
+      color: #333;
+      font-size: 0.75rem;
+      letter-spacing: 1px;
+    }
+    @media (max-width: 1024px) {
+      .grid { grid-template-columns: repeat(3, 1fr); }
+      .card img { height: 280px; }
+    }
+    @media (max-width: 768px) {
+      header { flex-wrap: wrap; padding: 16px 12px; gap: 8px; }
+      .header-left { position: static; transform: none; }
+      header .title-group { width: 100%; order: -1; margin-bottom: 8px; }
+      header h1 { font-size: 1rem; letter-spacing: 3px; }
+      .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .card img { height: 220px; }
+      .container { padding: 12px; }
+    }
+    @media (max-width: 480px) {
+      .grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+      .card img { height: 180px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-left">
+      <a href="index.html" class="nav-btn">&larr; Home</a>
+    </div>
+    <div class="title-group">
+      <h1>Galleries</h1>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="info" id="info"></div>
+    <div class="grid" id="feed"></div>
+  </div>
+
+  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <button class="close">&times;</button>
+    <img id="lightbox-img" alt="">
+  </div>
+
+  <footer>AI Fashion Feed</footer>
+
+  <script>
+    const MAX_POSTS = 10;
+    const feed = document.getElementById('feed');
+    const info = document.getElementById('info');
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+
+    function openLightbox(src) {
+      lightbox.classList.add('active');
+      lightboxImg.src = src;
+    }
+    function closeLightbox() {
+      lightbox.classList.remove('active');
+      lightboxImg.src = '';
+    }
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeLightbox();
+    });
+    lightbox.querySelector('.close').addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeLightbox();
+    });
+
+    function renderImages(images, caption, timestamp) {
+      images.forEach(src => {
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.onclick = () => openLightbox(src);
+        div.innerHTML = `
+          <img src="${src}" alt="AI Fashion" loading="lazy" onerror="this.parentElement.style.display='none'">
+          <div class="card-body">
+            <div class="caption">${caption || 'AI Fashion'}</div>
+            <div class="timestamp">${timestamp ? new Date(timestamp * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}</div>
+          </div>
+        `;
+        feed.appendChild(div);
+      });
+    }
+
+    fetch('content/history.json')
+      .then(r => {
+        if (!r.ok) throw new Error('Failed to load');
+        return r.json();
+      })
+      .then(history => {
+        if (!history || history.length === 0) {
+          feed.innerHTML = '<div class="empty">No archived images</div>';
+          return;
+        }
+        const count = history.length;
+        const older = history.slice(0, Math.max(0, count - MAX_POSTS));
+        const hasOlder = older.length > 0;
+        const onMain = Math.min(count, MAX_POSTS);
+
+        if (!hasOlder) {
+          info.textContent = `All ${count} posts are shown on the home page.`;
+          feed.innerHTML = '<div class="empty">No archived images yet. They will appear here once more than 10 posts exist.</div>';
+          return;
+        }
+
+        info.textContent = `Showing ${older.length * 4} archived images from ${older.length} older posts. (Latest ${onMain} posts on home page.)`;
+
+        older.forEach(post => {
+          if (post.images && post.images.length) {
+            renderImages(post.images, post.caption, post.timestamp);
+          }
+        });
+      })
+      .catch(() => {
+        feed.innerHTML = '<div class="error">Content loading...</div>';
+      });
+  </script>
+</body>
+</html>
