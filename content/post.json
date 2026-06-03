@@ -1,20 +1,15 @@
 {
-  "prompt": "hyper realistic fashion model, editorial face, soft skin texture, high fashion futuristic outfit, glossy fabric, runway style, dark studio, cinematic lighting, soft fog, reflective floor, luxury fashion photography studio setup, 8K RAW, DSLR, 85mm lens, f/1.4, ISO 100, ultra realistic fashion photography, cinematic lighting, high detail",
   "images": [
     {
-      "url": "https://raw.githubusercontent.com/aydannadya31/ai-fashion-auto-site/main/content/images/fashion_1780490026_0.jpg",
-      "model": "@cf/black-forest-labs/flux-2-dev"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/aydannadya31/ai-fashion-auto-site/main/content/images/fashion_1780490028_1.jpg",
+      "url": "https://raw.githubusercontent.com/aydannadya31/ai-fashion-auto-site/main/content/images/fashion_1780491444_1.jpg",
       "model": "@cf/black-forest-labs/flux-2-klein-9b"
     },
     {
-      "url": "https://raw.githubusercontent.com/aydannadya31/ai-fashion-auto-site/main/content/images/fashion_1780490051_2.jpg",
+      "url": "https://raw.githubusercontent.com/aydannadya31/ai-fashion-auto-site/main/content/images/fashion_1780491446_2.jpg",
       "model": "@cf/black-forest-labs/flux-2-klein-4b"
     }
   ],
-  "caption": "AI Fashion Multi-Model — 3 models",
-  "count": 3,
-  "timestamp": 1780490051
+  "caption": "AI Fashion Multi-Model — 2 images",
+  "count": 2,
+  "timestamp": 1780491447
 }
