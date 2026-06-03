@@ -4,12 +4,12 @@ import os
 import time
 import json
 
-CF_API_TOKEN = os.environ.get('CF_API_TOKEN', '')
-CF_ACCOUNT_ID = os.environ.get('CF_ACCOUNT_ID', '')
+HF_TOKEN = os.environ.get('HF_TOKEN', '')
+MODEL = "stabilityai/stable-diffusion-xl-base-1.0"
+API_URL = f"https://api-inference.huggingface.co/models/{MODEL}"
+HEADERS = {"Authorization": f"Bearer {HF_TOKEN}"}
 
 BASE_URL = "https://raw.githubusercontent.com/aydannadya31/ai-fashion-auto-site/main/"
-API_URL = f"https://api.cloudflare.com/client/v4/accounts/{CF_ACCOUNT_ID}/ai/run/@cf/stabilityai/stable-diffusion-xl-base-1.0"
-HEADERS = {"Authorization": f"Bearer {CF_API_TOKEN}"}
 
 PROMPT = (
     "hyper realistic fashion model, editorial face, soft skin texture, "
@@ -25,42 +25,36 @@ CAPTION = "AI Fashion Drop \u2014 luxury high-end studio shoot"
 
 def generate_one(i):
     payload = {
-        "prompt": PROMPT,
-        "negative_prompt": "low quality, blurry, cartoon, anime, watermark, text",
-        "num_steps": 30
+        "inputs": PROMPT,
+        "parameters": {
+            "negative_prompt": "low quality, blurry, cartoon, anime, watermark, text",
+            "num_inference_steps": 30
+        }
     }
 
-    res = requests.post(API_URL, headers=HEADERS, json=payload, timeout=120)
+    res = requests.post(API_URL, headers=HEADERS, json=payload, timeout=180)
     print(f"  Image {i}: status {res.status_code}")
 
-    result = res.json()
+    content_type = res.headers.get("Content-Type", "")
 
-    if not result.get("success"):
-        print(f"  API error: {result.get('errors', result)}")
-        return None
+    if "image" in content_type:
+        img = res.content
+    else:
+        result = res.json()
+        if isinstance(result, list) and len(result) > 0:
+            item = result[0]
+            if isinstance(item, dict) and "image" in item.get("content-type", ""):
+                img = base64.b64decode(item.get("image", item.get("encoded", "")))
+            else:
+                print(f"  Unexpected response: {str(result)[:200]}")
+                return None
+        elif isinstance(result, dict) and "error" in result:
+            print(f"  API error: {result['error']}")
+            return None
+        else:
+            print(f"  Unknown response format: {str(result)[:200]}")
+            return None
 
-    img_b64 = None
-    try:
-        img_b64 = result["result"]["image"]
-    except Exception:
-        try:
-            img_b64 = result["result"]["response"]
-        except Exception:
-            try:
-                img_b64 = result["result"]
-            except Exception:
-                pass
-
-    if isinstance(img_b64, dict):
-        img_b64 = img_b64.get("image") or img_b64.get("response")
-    if isinstance(img_b64, list) and img_b64:
-        img_b64 = img_b64[0]
-
-    if not img_b64 or not isinstance(img_b64, str):
-        print(f"  Unexpected image data type: {type(img_b64)}")
-        return None
-
-    img = base64.b64decode(img_b64)
     os.makedirs("content/images", exist_ok=True)
     filename = f"fashion_{int(time.time())}_{i}.jpg"
 
@@ -73,10 +67,10 @@ def generate_one(i):
 
 
 def main():
-    print("=== AI Fashion Generator ===")
+    print("=== AI Fashion Generator (Hugging Face) ===")
 
-    if not CF_API_TOKEN or not CF_ACCOUNT_ID:
-        print("CF_API_TOKEN or CF_ACCOUNT_ID not set — exiting without changes")
+    if not HF_TOKEN:
+        print("HF_TOKEN not set — exiting without changes")
         return
 
     images = []
@@ -85,11 +79,13 @@ def main():
             url = generate_one(i)
             if url:
                 images.append(url)
+            else:
+                print(f"  Image {i} returned no URL")
         except Exception as e:
             print(f"  Image {i} failed: {e}")
 
     if len(images) < 4:
-        print(f"Only got {len(images)} images, need 4. Aborting to avoid duplicates.")
+        print(f"Only got {len(images)}/4 images — aborting to avoid duplicates")
         return
 
     post = {
