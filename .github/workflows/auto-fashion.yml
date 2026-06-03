@@ -1,6 +1,8 @@
 name: AI Fashion Engine
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
   schedule:
     - cron: "0 */6 * * *"
@@ -31,14 +33,14 @@ jobs:
 
       - name: Update history
         continue-on-error: true
-        run: python -c "
-import json, os
-if os.path.exists('content/post.json'):
-    post = json.load(open('content/post.json'))
-    history = json.load(open('content/history.json')) if os.path.exists('content/history.json') else []
-    history.append(post)
-    json.dump(history, open('content/history.json', 'w'), indent=2)
-"
+        shell: python
+        run: |
+          import json, os
+          if os.path.exists('content/post.json'):
+              post = json.load(open('content/post.json'))
+              history = json.load(open('content/history.json')) if os.path.exists('content/history.json') else []
+              history.append(post)
+              json.dump(history, open('content/history.json', 'w'), indent=2)
 
       - name: Commit changes
         run: |
