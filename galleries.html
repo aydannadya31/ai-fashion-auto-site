@@ -262,9 +262,9 @@
 
         info.textContent = `Showing ${older.length * 4} archived images from ${older.length} older posts. (Latest ${onMain} posts on home page.)`;
 
-        older.forEach(post => {
+        older.reverse().forEach(post => {
           if (post.images && post.images.length) {
-            renderImages(post.images, post.caption, post.timestamp);
+            renderImages(post.images.slice().reverse(), post.caption, post.timestamp);
           }
         });
       })

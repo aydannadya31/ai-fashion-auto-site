@@ -355,10 +355,10 @@
           feed.innerHTML = '<div class="empty">No images yet</div>';
           return;
         }
-        const posts = history.slice(-MAX_POSTS);
+        const posts = history.slice(-MAX_POSTS).reverse();
         posts.forEach(post => {
           if (post.images && post.images.length) {
-            renderImages(post.images, post.caption, post.timestamp);
+            renderImages(post.images.slice().reverse(), post.caption, post.timestamp);
           }
         });
       })
