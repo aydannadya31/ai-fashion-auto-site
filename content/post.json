@@ -1,12 +1,20 @@
 {
-  "style": "luxury high-end studio shoot",
-  "prompt": "\nhyper realistic fashion model, editorial face, soft skin texture,\nhigh fashion futuristic outfit, glossy fabric, runway style,\ndark studio, cinematic lighting, soft fog, reflective floor,\nluxury fashion photography studio setup,\n8K RAW, DSLR, 85mm lens, f/1.4, ISO 100,\nluxury high-end studio shoot,\nultra realistic fashion photography, cinematic lighting, high detail\n",
+  "prompt": "hyper realistic fashion model, editorial face, soft skin texture, high fashion futuristic outfit, glossy fabric, runway style, dark studio, cinematic lighting, soft fog, reflective floor, luxury fashion photography studio setup, 8K RAW, DSLR, 85mm lens, f/1.4, ISO 100, ultra realistic fashion photography, cinematic lighting, high detail",
   "images": [
-    "https://raw.githubusercontent.com/aydannadya31/ai-fashion-auto-site/main/content/images/fashion_1778855211_0.jpg",
-    "https://raw.githubusercontent.com/aydannadya31/ai-fashion-auto-site/main/content/images/fashion_1778855213_1.jpg",
-    "https://raw.githubusercontent.com/aydannadya31/ai-fashion-auto-site/main/content/images/fashion_1778855216_2.jpg",
-    "https://raw.githubusercontent.com/aydannadya31/ai-fashion-auto-site/main/content/images/fashion_1778855218_3.jpg"
+    {
+      "url": "https://raw.githubusercontent.com/aydannadya31/ai-fashion-auto-site/main/content/images/fashion_1780490026_0.jpg",
+      "model": "@cf/black-forest-labs/flux-2-dev"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/aydannadya31/ai-fashion-auto-site/main/content/images/fashion_1780490028_1.jpg",
+      "model": "@cf/black-forest-labs/flux-2-klein-9b"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/aydannadya31/ai-fashion-auto-site/main/content/images/fashion_1780490051_2.jpg",
+      "model": "@cf/black-forest-labs/flux-2-klein-4b"
+    }
   ],
-  "caption": "AI Fashion Drop \u2014 luxury high-end studio shoot",
-  "timestamp": 1778855219
+  "caption": "AI Fashion Multi-Model — 3 models",
+  "count": 3,
+  "timestamp": 1780490051
 }
