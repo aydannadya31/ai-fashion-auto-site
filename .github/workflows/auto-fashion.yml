@@ -38,9 +38,16 @@ jobs:
           import json, os
           if os.path.exists('content/post.json'):
               post = json.load(open('content/post.json'))
-              history = json.load(open('content/history.json')) if os.path.exists('content/history.json') else []
-              history.append(post)
-              json.dump(history, open('content/history.json', 'w'), indent=2)
+              if os.path.exists('content/history.json'):
+                  history = json.load(open('content/history.json'))
+              else:
+                  history = []
+              if not history or history[-1].get('timestamp') != post.get('timestamp'):
+                  history.append(post)
+                  json.dump(history, open('content/history.json', 'w'), indent=2)
+                  print("History updated")
+              else:
+                  print("No new post, skipping history")
 
       - name: Commit changes
         run: |
