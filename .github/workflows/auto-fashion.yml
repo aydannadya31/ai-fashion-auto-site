@@ -7,18 +7,10 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages
-  cancel-in-progress: false
 
 jobs:
   generate:
     runs-on: ubuntu-latest
-    outputs:
-      has_changes: ${{ steps.check.outputs.changed }}
 
     steps:
       - uses: actions/checkout@v4
@@ -31,13 +23,14 @@ jobs:
         run: pip install requests
 
       - name: Generate content
-        id: generate
+        continue-on-error: true
         run: python scripts/generator.py
         env:
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
 
       - name: Update history
+        continue-on-error: true
         run: python -c "
 import json, os
 if os.path.exists('content/post.json'):
@@ -48,34 +41,13 @@ if os.path.exists('content/post.json'):
 "
 
       - name: Commit changes
-        id: check
         run: |
           git config --global user.name "ai-bot"
           git config --global user.email "bot@ai.com"
           git add -A
           if git diff --cached --quiet; then
-            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "no changes"
           else
             git commit -m "AI fashion update $(date +'%Y-%m-%d %H:%M')"
             git push
-            echo "changed=true" >> $GITHUB_OUTPUT
           fi
-
-  deploy:
-    needs: generate
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: "."
-
-      - name: Deploy to Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
