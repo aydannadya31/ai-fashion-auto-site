@@ -172,6 +172,39 @@
       border: none;
     }
     .lightbox .close:hover { opacity: 1; }
+    .gen-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      z-index: 3000;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+    .gen-overlay.active { display: flex; }
+    .gen-overlay .spinner {
+      width: 48px; height: 48px;
+      border: 3px solid #222;
+      border-top-color: #888;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .gen-overlay p {
+      margin-top: 20px;
+      color: #aaa;
+      font-size: 1rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .gen-overlay .sub {
+      margin-top: 6px;
+      color: #555;
+      font-size: 0.75rem;
+      letter-spacing: 1px;
+    }
     footer {
       text-align: center;
       padding: 24px 20px;
@@ -294,6 +327,12 @@
     <img id="lightbox-img" alt="">
   </div>
 
+  <div class="gen-overlay" id="genOverlay">
+    <div class="spinner"></div>
+    <p>Üretiliyor...</p>
+    <div class="sub" id="genStatus">Workflow başlatılıyor</div>
+  </div>
+
   <footer>Powered by AI &middot; Updated every 6 hours</footer>
 
   <script>
@@ -379,6 +418,9 @@
       });
 
     /* generate modal */
+    const genOverlay = document.getElementById('genOverlay');
+    const genStatus = document.getElementById('genStatus');
+
     genBtn.addEventListener('click', async () => {
       let pat = localStorage.getItem(PAT_KEY);
       if (!pat) {
@@ -386,34 +428,64 @@
         if (!pat) return;
         localStorage.setItem(PAT_KEY, pat);
       }
-      genBtn.disabled = true;
-      genBtn.textContent = 'Running...';
+
+      genOverlay.classList.add('active');
+      genStatus.textContent = 'Workflow başlatılıyor';
+
+      const headers = {
+        'Authorization': `Bearer ${pat}`,
+        'Accept': 'application/vnd.github+json'
+      };
+
       try {
+        const lastRuns = await fetch(
+          `https://api.github.com/repos/${OWNER}/${REPO}/actions/workflows/${WORKFLOW}/runs?per_page=1`,
+          { headers }
+        ).then(r => r.json());
+        const lastId = lastRuns.workflow_runs?.[0]?.id || 0;
+
         const res = await fetch(
           `https://api.github.com/repos/${OWNER}/${REPO}/actions/workflows/${WORKFLOW}/dispatches`,
           {
             method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${pat}`,
-              'Content-Type': 'application/json',
-              'Accept': 'application/vnd.github+json'
-            },
+            headers: { ...headers, 'Content-Type': 'application/json' },
             body: JSON.stringify({ ref: 'main' })
           }
         );
+
         if (!res.ok) {
           if (res.status === 401 || res.status === 403) {
             localStorage.removeItem(PAT_KEY);
-            throw new Error('Token invalid or expired. Please re-enter.');
+            throw new Error('Token geçersiz veya süresi dolmuş');
           }
-          throw new Error(`GitHub API error (${res.status})`);
+          throw new Error(`API hatası (${res.status})`);
         }
-        alert('Workflow started! Check Actions tab.');
+
+        genStatus.textContent = 'Görseller üretiliyor...';
+
+        let waited = 0;
+        while (waited < 300) {
+          await new Promise(r => setTimeout(r, 8000));
+          waited += 8;
+          const check = await fetch(
+            `https://api.github.com/repos/${OWNER}/${REPO}/actions/workflows/${WORKFLOW}/runs?per_page=1`,
+            { headers }
+          ).then(r => r.json());
+          const run = check.workflow_runs?.[0];
+          if (run && run.id > lastId && run.status === 'completed') {
+            genStatus.textContent = 'Tamamlandı! Sayfa yenileniyor...';
+            await new Promise(r => setTimeout(r, 2000));
+            location.reload();
+            return;
+          }
+          genStatus.textContent = `Üretiliyor... (${waited}s)`;
+        }
+        genStatus.textContent = 'Zaman aşımı — sayfa yenileniyor';
+        await new Promise(r => setTimeout(r, 2000));
+        location.reload();
       } catch (err) {
+        genOverlay.classList.remove('active');
         alert(err.message);
-      } finally {
-        genBtn.disabled = false;
-        genBtn.textContent = 'Generate!';
       }
     });
   </script>
