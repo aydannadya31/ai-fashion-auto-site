@@ -294,25 +294,12 @@
     <img id="lightbox-img" alt="">
   </div>
 
-  <div class="modal" id="pwModal">
-    <div class="modal-box">
-      <h2>Generate</h2>
-      <input type="password" id="pwInput" placeholder="Password" autocomplete="off">
-      <div class="actions">
-        <button onclick="closePwModal()">Cancel</button>
-        <button class="primary" onclick="handlePassword()">Confirm</button>
-      </div>
-      <div class="msg" id="pwMsg"></div>
-    </div>
-  </div>
-
   <footer>Powered by AI &middot; Updated every 6 hours</footer>
 
   <script>
     const OWNER = 'aydannadya31';
     const REPO = 'ai-fashion-auto-site';
     const WORKFLOW = 'auto-fashion.yml';
-    const PASSWORD = 'Ag1453ag!';
     const PAT_KEY = 'gh_fashion_pat';
     const MAX_POSTS = 10;
 
@@ -320,9 +307,6 @@
     const lightbox = document.getElementById('lightbox');
     const lightboxImg = document.getElementById('lightbox-img');
     const genBtn = document.getElementById('genBtn');
-    const pwModal = document.getElementById('pwModal');
-    const pwInput = document.getElementById('pwInput');
-    const pwMsg = document.getElementById('pwMsg');
 
     /* lightbox */
     function openLightbox(src) {
@@ -395,40 +379,15 @@
       });
 
     /* generate modal */
-    function showPwModal() {
-      pwMsg.textContent = '';
-      pwMsg.className = 'msg';
-      pwInput.value = '';
-      pwModal.classList.add('active');
-      pwInput.focus();
-    }
-    function closePwModal() {
-      pwModal.classList.remove('active');
-    }
-    pwModal.addEventListener('click', (e) => {
-      if (e.target === pwModal) closePwModal();
-    });
-    pwInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') handlePassword();
-      if (e.key === 'Escape') closePwModal();
-    });
-    genBtn.addEventListener('click', showPwModal);
-
-    async function handlePassword() {
-      if (pwInput.value !== PASSWORD) {
-        pwMsg.textContent = 'Wrong password';
-        pwMsg.className = 'msg error';
-        return;
-      }
-      closePwModal();
+    genBtn.addEventListener('click', async () => {
       let pat = localStorage.getItem(PAT_KEY);
       if (!pat) {
         pat = prompt('Enter your GitHub Personal Access Token (workflow write permission):');
         if (!pat) return;
         localStorage.setItem(PAT_KEY, pat);
       }
-      pwMsg.textContent = 'Triggering workflow...';
-      pwMsg.className = 'msg';
+      genBtn.disabled = true;
+      genBtn.textContent = 'Running...';
       try {
         const res = await fetch(
           `https://api.github.com/repos/${OWNER}/${REPO}/actions/workflows/${WORKFLOW}/dispatches`,
@@ -450,12 +409,13 @@
           throw new Error(`GitHub API error (${res.status})`);
         }
         alert('Workflow started! Check Actions tab.');
-        pwMsg.textContent = '';
       } catch (err) {
         alert(err.message);
-        pwMsg.textContent = '';
+      } finally {
+        genBtn.disabled = false;
+        genBtn.textContent = 'Generate!';
       }
-    }
+    });
   </script>
 </body>
 </html>
