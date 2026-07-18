@@ -1,15 +1,15 @@
 {
   "images": [
     {
-      "url": "https://raw.githubusercontent.com/aydannadya31/ai-fashion-auto-site/main/content/images/fashion_1784294146_1.jpg",
+      "url": "https://raw.githubusercontent.com/aydannadya31/ai-fashion-auto-site/main/content/images/fashion_1784379694_1.jpg",
       "model": "@cf/black-forest-labs/flux-2-klein-9b"
     },
     {
-      "url": "https://raw.githubusercontent.com/aydannadya31/ai-fashion-auto-site/main/content/images/fashion_1784294166_2.jpg",
+      "url": "https://raw.githubusercontent.com/aydannadya31/ai-fashion-auto-site/main/content/images/fashion_1784379726_2.jpg",
       "model": "@cf/black-forest-labs/flux-2-klein-4b"
     }
   ],
   "caption": "AI Fashion Multi-Model — 2 images",
   "count": 2,
-  "timestamp": 1784294166
+  "timestamp": 1784379727
 }
