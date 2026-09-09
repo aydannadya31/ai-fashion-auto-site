@@ -3970,5 +3970,20 @@
     "caption": "AI Fashion Multi-Model \u2014 2 images",
     "count": 2,
     "timestamp": 1788968779
+  },
+  {
+    "images": [
+      {
+        "url": "https://raw.githubusercontent.com/aydannadya31/ai-fashion-auto-site/main/content/images/fashion_1788985108_1.jpg",
+        "model": "@cf/black-forest-labs/flux-2-klein-9b"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/aydannadya31/ai-fashion-auto-site/main/content/images/fashion_1788985134_2.jpg",
+        "model": "@cf/black-forest-labs/flux-2-klein-4b"
+      }
+    ],
+    "caption": "AI Fashion Multi-Model \u2014 2 images",
+    "count": 2,
+    "timestamp": 1788985134
   }
 ]
